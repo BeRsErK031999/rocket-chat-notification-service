@@ -20,7 +20,14 @@ const envSchema = z.object({
   DEFAULT_NOTIFICATION_CHANNEL: z.string().min(1).default("general"),
   FINANCE_ALERTS_CHANNEL: z.string().min(1).default("finance-alerts"),
   PROJECT_ALERTS_CHANNEL_PREFIX: z.string().min(1).default("project-"),
-  MONITORING_ALERTS_CHANNEL: z.string().min(1).default("monitoring-alerts")
+  MONITORING_ALERTS_CHANNEL: z.string().min(1).default("monitoring-alerts"),
+  APP_BASE_URL: z.union([z.string().url(), z.literal("")]).default(""),
+  PROJECT_PAGE_PATH_TEMPLATE: z.string().min(1).default("/projects/:projectId"),
+  FINANCE_PAGE_PATH_TEMPLATE: z.string().min(1).default("/projects/:projectId/finance"),
+  MONITORING_PAGE_PATH_TEMPLATE: z
+    .string()
+    .min(1)
+    .default("/monitoring/employees/:employeeId")
 });
 
 export const env = envSchema.parse(process.env);

@@ -103,7 +103,8 @@ are skipped with result `duplicate_skipped` while the event id is still within T
 Notification routing is handled separately from message formatting. The mapper prepares
 normalized template data and `metadata`, the template renderer builds Rocket.Chat markdown
 `text`, and routing rules choose the Rocket.Chat channel. See
-[docs/templates.md](docs/templates.md) and [docs/routing.md](docs/routing.md).
+[docs/templates.md](docs/templates.md), [docs/links.md](docs/links.md), and
+[docs/routing.md](docs/routing.md).
 
 ## Observability
 
@@ -182,6 +183,10 @@ DEFAULT_NOTIFICATION_CHANNEL=general
 FINANCE_ALERTS_CHANNEL=finance-alerts
 PROJECT_ALERTS_CHANNEL_PREFIX=project-
 MONITORING_ALERTS_CHANNEL=monitoring-alerts
+APP_BASE_URL=
+PROJECT_PAGE_PATH_TEMPLATE=/projects/:projectId
+FINANCE_PAGE_PATH_TEMPLATE=/projects/:projectId/finance
+MONITORING_PAGE_PATH_TEMPLATE=/monitoring/employees/:employeeId
 ```
 
 Run the notification service locally:

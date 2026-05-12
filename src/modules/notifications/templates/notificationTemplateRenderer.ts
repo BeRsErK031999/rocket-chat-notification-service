@@ -18,25 +18,29 @@ export const renderNotificationTemplate = (input: NotificationTemplateInput): st
     case "project.deadline.overdue":
       return renderProjectDeadlineOverdueTemplate(
         input.data as ProjectDeadlineOverdueTemplateData,
-        input.severity
+        input.severity,
+        input.links
       );
 
     case "project.member.overallocated":
       return renderProjectMemberOverallocatedTemplate(
         input.data as ProjectMemberOverallocatedTemplateData,
-        input.severity
+        input.severity,
+        input.links
       );
 
     case "finance.budget.exceeded":
       return renderFinanceBudgetExceededTemplate(
         input.data as FinanceBudgetExceededTemplateData,
-        input.severity
+        input.severity,
+        input.links
       );
 
     case "monitoring.employee.afk":
       return renderMonitoringEmployeeAfkTemplate(
         input.data as MonitoringEmployeeAfkTemplateData,
-        input.severity
+        input.severity,
+        input.links
       );
 
     default:

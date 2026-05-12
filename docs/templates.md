@@ -10,6 +10,7 @@ The event mapper prepares:
 The template renderer prepares:
 
 - the final Rocket.Chat `text`
+- optional Rocket.Chat markdown links prepared by the notification link builder
 
 Routing remains separate and still resolves only the Rocket.Chat channel. Manual
 `POST /notifications/send` requests keep their existing behavior and provide `text`

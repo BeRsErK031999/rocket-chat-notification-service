@@ -13,7 +13,8 @@ describe("renderNotificationTemplate", () => {
           actualAmount: 120,
           limitAmount: 100,
           currency: "USD"
-        }
+        },
+        links: {}
       })
     ).toBe('*[critical]* Budget "Ops" exceeded: 120 USD / 100 USD.');
   });
@@ -24,10 +25,12 @@ describe("renderNotificationTemplate", () => {
         event: "project.deadline.overdue",
         severity: "warning",
         data: {
+          projectId: "project-1",
           projectName: "Launch",
           deadline: "2026-05-10T00:00:00.000Z",
           daysOverdue: 2
-        }
+        },
+        links: {}
       })
     ).toBe('*[warning]* Project "Launch" is overdue by 2 day(s). Deadline: 2026-05-10T00:00:00.000Z.');
   });
@@ -38,9 +41,11 @@ describe("renderNotificationTemplate", () => {
         event: "monitoring.employee.afk",
         severity: "warning",
         data: {
+          employeeId: "employee-1",
           employeeName: "Ada",
           minutesAfk: 15
-        }
+        },
+        links: {}
       })
     ).toBe("*[warning]* Ada has been AFK for 15 minute(s).");
   });
@@ -50,7 +55,8 @@ describe("renderNotificationTemplate", () => {
       renderNotificationTemplate({
         event: "unknown.event",
         severity: "info",
-        data: {}
+        data: {},
+        links: {}
       })
     ).toBe("*[info]* Unsupported notification event: unknown.event.");
   });
