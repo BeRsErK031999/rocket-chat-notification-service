@@ -10,11 +10,13 @@
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
+    "publish:test-event": "tsx scripts/publish-test-event.ts",
     "format": "prettier --write ."
   },
   "dependencies": {
     "dotenv": "^16.4.7",
     "fastify": "^5.2.1",
+    "nats": "^2.29.3",
     "pino": "^9.6.0",
     "zod": "^3.24.1"
   },
@@ -32,4 +34,3 @@
   },
   "packageManager": "yarn@1.22.22"
 }
-

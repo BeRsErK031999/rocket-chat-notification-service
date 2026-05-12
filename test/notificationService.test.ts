@@ -6,7 +6,8 @@ import { NotificationService } from "../src/modules/notifications/notificationSe
 describe("NotificationService", () => {
   it("sends a message through RocketChatClient", async () => {
     const rocketChatClient = {
-      postMessage: vi.fn<RocketChatClientPort["postMessage"]>().mockResolvedValue({ ok: true })
+      postMessage: vi.fn<RocketChatClientPort["postMessage"]>().mockResolvedValue({ ok: true }),
+      healthCheck: vi.fn<RocketChatClientPort["healthCheck"]>().mockResolvedValue(true)
     };
     const service = new NotificationService(rocketChatClient);
 
@@ -22,4 +23,3 @@ describe("NotificationService", () => {
     });
   });
 });
-

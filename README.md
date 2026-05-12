@@ -2,13 +2,15 @@
 
 Standalone Node.js/TypeScript microservice for sending notifications to Rocket.Chat.
 
-The service accepts notification events from internal services, transforms them into messages, and sends them through the Rocket.Chat REST API. NATS consumers are intentionally not connected yet; the current HTTP route is the first integration surface.
+The service accepts notification requests over HTTP and consumes typed events from NATS,
+transforms them into messages, and sends them through the Rocket.Chat REST API.
 
 ## Stack
 
 - Node.js
 - TypeScript
 - Fastify
+- NATS
 - Zod
 - dotenv
 - pino
@@ -44,19 +46,58 @@ yarn lint
 yarn test
 ```
 
-Keep changes focused on the standalone notification service. NATS consumers are intentionally
-left as a future extension point.
+Keep changes focused on the standalone notification service.
 
 ## Architecture overview
 
-The service exposes HTTP endpoints for notification delivery and forwards accepted messages to
-Rocket.Chat through its REST API.
+The service exposes HTTP endpoints for direct notification delivery and subscribes to NATS
+events from internal services.
 
 ```mermaid
 flowchart LR
-  A[notification-service] --> B[Rocket.Chat]
-  B --> C[channels/users]
+  A[finance-service] --> D[NATS]
+  B[gantt-service] --> D
+  C[monitoring-service] --> D
+  D --> E[notification-service]
+  E --> F[Rocket.Chat]
 ```
+
+## Event architecture
+
+NATS subjects are built as `{NATS_PREFIX}.{event}`. Incoming payloads are validated with Zod
+before they are mapped to Rocket.Chat notifications.
+
+Consumer flow:
+
+```text
+NATS event -> schema validation -> notification mapper -> notification service -> Rocket.Chat
+```
+
+Structured logs include `eventId`, `correlationId`, `subject`, `event`, `severity`, and
+`source` for valid events. Invalid events are logged without forwarding to Rocket.Chat.
+
+Every event must include a unique `eventId`. `correlationId` is optional and is preserved in
+notification metadata and logs when provided.
+
+Event processing returns an internal structured status:
+
+- `success`
+- `validation_failed`
+- `mapping_failed`
+- `delivery_failed`
+
+Rocket.Chat delivery uses a bounded in-process retry policy. Defaults are 3 total attempts
+with a 500 ms delay between attempts. Retry is only applied to delivery failures after event
+validation and mapping have succeeded. See [docs/delivery.md](docs/delivery.md).
+
+## Supported events
+
+- `project.deadline.overdue`
+- `project.member.overallocated`
+- `finance.budget.exceeded`
+- `monitoring.employee.afk`
+
+See [docs/event-contracts.md](docs/event-contracts.md) for payload contracts.
 
 ## Local Rocket.Chat smoke test
 
@@ -77,6 +118,10 @@ PORT=4000
 ROCKET_CHAT_URL=http://localhost:3000
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
+NATS_URL=nats://localhost:4222
+NATS_PREFIX=notifications
+DELIVERY_RETRY_ATTEMPTS=3
+DELIVERY_RETRY_DELAY_MS=500
 ```
 
 Run the notification service locally:
@@ -93,6 +138,12 @@ curl -X POST http://localhost:4000/notifications/send \
   -d '{"channel":"#notifications","text":"Local Rocket.Chat smoke test"}'
 ```
 
+Publish a local NATS test event:
+
+```bash
+yarn publish:test-event
+```
+
 ## Commands
 
 ```bash
@@ -102,6 +153,7 @@ yarn start
 yarn type-check
 yarn lint
 yarn test
+yarn publish:test-event
 yarn format
 ```
 
@@ -117,11 +169,16 @@ yarn format
 
 ### `GET /ready`
 
+Returns `200` only when the service configuration is loaded and Rocket.Chat is reachable.
+
 ```json
 {
-  "status": "ok"
+  "status": "ok",
+  "rocketChat": "ok"
 }
 ```
+
+If Rocket.Chat is unavailable, the endpoint returns `503`.
 
 ### `POST /notifications/send`
 

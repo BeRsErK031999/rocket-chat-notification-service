@@ -16,6 +16,7 @@ const isRocketChatApiResponse = (value: unknown): value is RocketChatApiResponse
 
 export class RocketChatClient implements RocketChatClientPort {
   private readonly apiUrl: URL;
+  private readonly healthUrl: URL;
 
   constructor(
     baseUrl: string,
@@ -23,6 +24,19 @@ export class RocketChatClient implements RocketChatClientPort {
     private readonly authToken: string
   ) {
     this.apiUrl = new URL("/api/v1/chat.postMessage", baseUrl);
+    this.healthUrl = new URL("/api/info", baseUrl);
+  }
+
+  async healthCheck(): Promise<boolean> {
+    try {
+      const response = await fetch(this.healthUrl, {
+        method: "GET"
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    }
   }
 
   async postMessage(
@@ -56,4 +70,3 @@ export class RocketChatClient implements RocketChatClientPort {
     return { ok: true };
   }
 }
-
