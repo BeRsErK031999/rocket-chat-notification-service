@@ -154,6 +154,8 @@ See [docs/event-contracts.md](docs/event-contracts.md) for payload contracts.
 ## Local Rocket.Chat smoke test
 
 For the full end-to-end checklist, use [docs/e2e-smoke-test.md](docs/e2e-smoke-test.md).
+For checking the stack from other machines in an office LAN, use
+[docs/office-lan-test.md](docs/office-lan-test.md).
 
 Start the local Rocket.Chat infrastructure:
 
