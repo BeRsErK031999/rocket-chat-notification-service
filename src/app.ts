@@ -44,7 +44,8 @@ export const buildApp = ({
   const notificationDeliveryService = new NotificationDeliveryService(
     notificationService,
     createRetryPolicy(env.DELIVERY_RETRY_ATTEMPTS, env.DELIVERY_RETRY_DELAY_MS),
-    app.log
+    app.log,
+    env.ROCKET_CHAT_CHANNEL_CHECK_ENABLED
   );
   const natsClient = new NatsClient(env.NATS_URL);
   const notificationRouter = new RuleBasedNotificationRouter({

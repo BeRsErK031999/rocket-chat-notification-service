@@ -10,7 +10,8 @@ process.env.ROCKET_CHAT_AUTH_TOKEN = "test-auth-token";
 
 const createRocketChatClient = (): RocketChatClientPort => ({
   postMessage: vi.fn<RocketChatClientPort["postMessage"]>().mockResolvedValue({ ok: true }),
-  healthCheck: vi.fn<RocketChatClientPort["healthCheck"]>().mockResolvedValue(true)
+  healthCheck: vi.fn<RocketChatClientPort["healthCheck"]>().mockResolvedValue(true),
+  channelExists: vi.fn<RocketChatClientPort["channelExists"]>().mockResolvedValue(true)
 });
 
 describe("app", () => {
@@ -57,7 +58,8 @@ describe("app", () => {
     const { buildApp } = await import("../src/app.js");
     const rocketChatClient: RocketChatClientPort = {
       postMessage: vi.fn<RocketChatClientPort["postMessage"]>().mockResolvedValue({ ok: true }),
-      healthCheck: vi.fn<RocketChatClientPort["healthCheck"]>().mockResolvedValue(false)
+      healthCheck: vi.fn<RocketChatClientPort["healthCheck"]>().mockResolvedValue(false),
+      channelExists: vi.fn<RocketChatClientPort["channelExists"]>().mockResolvedValue(true)
     };
     const app = buildApp({ rocketChatClient });
 

@@ -91,6 +91,8 @@ Event processing returns an internal structured status:
 Rocket.Chat delivery uses a bounded in-process retry policy. Defaults are 3 total attempts
 with a 500 ms delay between attempts. Retry is only applied to delivery failures after event
 validation and mapping have succeeded. See [docs/delivery.md](docs/delivery.md).
+Optional Rocket.Chat channel existence checks can fail missing channels before sending
+without retrying them. See [docs/channel-checks.md](docs/channel-checks.md).
 
 NATS consumers use JetStream durable consumers with explicit ack. `delivery_failed` messages
 are published to `notifications.dlq` and then acknowledged to avoid infinite redelivery loops.
@@ -178,6 +180,7 @@ NATS_DURABLE_PREFIX=rocket-chat-notification-service
 NATS_DLQ_SUBJECT=notifications.dlq
 DELIVERY_RETRY_ATTEMPTS=3
 DELIVERY_RETRY_DELAY_MS=500
+ROCKET_CHAT_CHANNEL_CHECK_ENABLED=false
 IDEMPOTENCY_TTL_MS=86400000
 DEFAULT_NOTIFICATION_CHANNEL=general
 FINANCE_ALERTS_CHANNEL=finance-alerts

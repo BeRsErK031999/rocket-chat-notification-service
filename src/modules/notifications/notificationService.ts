@@ -4,6 +4,10 @@ import type { SendNotificationInput, SendNotificationResult } from "./notificati
 export class NotificationService {
   constructor(private readonly rocketChatClient: RocketChatClientPort) {}
 
+  async channelExists(channel: string): Promise<boolean> {
+    return this.rocketChatClient.channelExists(channel);
+  }
+
   async send(input: SendNotificationInput): Promise<SendNotificationResult> {
     await this.rocketChatClient.postMessage({
       channel: input.channel,
@@ -13,4 +17,3 @@ export class NotificationService {
     return { ok: true };
   }
 }
-

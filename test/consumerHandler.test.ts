@@ -6,6 +6,7 @@ import type { NotificationEvent } from "../src/events/contracts/index.js";
 import { InMemoryIdempotencyStore } from "../src/events/idempotency/inMemoryIdempotencyStore.js";
 import type { IdempotencyStore } from "../src/events/idempotency/idempotencyStore.js";
 import type { NotificationDeliveryPort } from "../src/modules/notifications/delivery/notificationDeliveryService.js";
+import { MissingNotificationChannelError } from "../src/modules/notifications/delivery/notificationDeliveryService.js";
 import type { NotificationRouter } from "../src/modules/notifications/routing/routingTypes.js";
 import { metricsRegistry } from "../src/observability/metrics.js";
 
@@ -129,6 +130,31 @@ describe("handleIncomingEvent", () => {
       deliver: vi
         .fn<NotificationDeliveryPort["deliver"]>()
         .mockRejectedValue(new Error("Rocket.Chat unavailable"))
+    };
+
+    const result = await handleIncomingEvent({
+      subject: "notifications.finance.budget.exceeded",
+      data: validFinanceEvent,
+      notificationDeliveryService: deliveryService,
+      idempotencyStore,
+      notificationRouter: createRouter(),
+      logger: pino({ enabled: false })
+    });
+
+    expect(result).toEqual({
+      status: "delivery_failed",
+      eventId: "event-1",
+      correlationId: "correlation-1"
+    });
+    expect(idempotencyStore.has("event-1")).toBe(false);
+  });
+
+  it("returns delivery_failed when channel check reports a missing channel", async () => {
+    const idempotencyStore = createStore();
+    const deliveryService: NotificationDeliveryPort = {
+      deliver: vi
+        .fn<NotificationDeliveryPort["deliver"]>()
+        .mockRejectedValue(new MissingNotificationChannelError("finance-alerts"))
     };
 
     const result = await handleIncomingEvent({

@@ -16,6 +16,10 @@ const envSchema = z.object({
   NATS_DLQ_SUBJECT: z.string().min(1).default("notifications.dlq"),
   DELIVERY_RETRY_ATTEMPTS: z.coerce.number().int().positive().default(3),
   DELIVERY_RETRY_DELAY_MS: z.coerce.number().int().nonnegative().default(500),
+  ROCKET_CHAT_CHANNEL_CHECK_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   IDEMPOTENCY_TTL_MS: z.coerce.number().int().positive().default(86400000),
   DEFAULT_NOTIFICATION_CHANNEL: z.string().min(1).default("general"),
   FINANCE_ALERTS_CHANNEL: z.string().min(1).default("finance-alerts"),

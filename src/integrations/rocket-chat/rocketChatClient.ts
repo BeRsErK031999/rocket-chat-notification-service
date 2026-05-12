@@ -9,6 +9,7 @@ import type {
 type RocketChatApiResponse = {
   success?: boolean;
   error?: string;
+  room?: unknown;
 };
 
 const isRocketChatApiResponse = (value: unknown): value is RocketChatApiResponse => {
@@ -18,6 +19,7 @@ const isRocketChatApiResponse = (value: unknown): value is RocketChatApiResponse
 export class RocketChatClient implements RocketChatClientPort {
   private readonly apiUrl: URL;
   private readonly healthUrl: URL;
+  private readonly roomInfoUrl: URL;
 
   constructor(
     baseUrl: string,
@@ -26,6 +28,7 @@ export class RocketChatClient implements RocketChatClientPort {
   ) {
     this.apiUrl = new URL("/api/v1/chat.postMessage", baseUrl);
     this.healthUrl = new URL("/api/info", baseUrl);
+    this.roomInfoUrl = new URL("/api/v1/rooms.info", baseUrl);
   }
 
   async healthCheck(): Promise<boolean> {
@@ -73,5 +76,31 @@ export class RocketChatClient implements RocketChatClientPort {
     }
 
     return { ok: true };
+  }
+
+  async channelExists(channel: string): Promise<boolean> {
+    const roomName = channel.startsWith("#") ? channel.slice(1) : channel;
+    const url = new URL(this.roomInfoUrl);
+    url.searchParams.set("roomName", roomName);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "X-User-Id": this.userId,
+        "X-Auth-Token": this.authToken
+      }
+    });
+
+    const responseBody: unknown = await response.json().catch(() => undefined);
+
+    if (response.status === 404) {
+      return false;
+    }
+
+    if (!response.ok) {
+      throw new ExternalServiceError(`Rocket.Chat channel lookup failed with status ${response.status}`);
+    }
+
+    return isRocketChatApiResponse(responseBody) && responseBody.success === true && responseBody.room !== undefined;
   }
 }

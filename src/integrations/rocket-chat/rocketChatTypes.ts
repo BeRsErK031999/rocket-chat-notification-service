@@ -10,4 +10,5 @@ export type RocketChatPostMessageResult = {
 export type RocketChatClientPort = {
   postMessage(payload: RocketChatPostMessagePayload): Promise<RocketChatPostMessageResult>;
   healthCheck(): Promise<boolean>;
+  channelExists(channel: string): Promise<boolean>;
 };

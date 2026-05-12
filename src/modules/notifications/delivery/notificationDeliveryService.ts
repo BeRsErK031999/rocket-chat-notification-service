@@ -19,6 +19,13 @@ export type NotificationDeliveryPort = {
 
 type Delay = (delayMs: number) => Promise<void>;
 
+export class MissingNotificationChannelError extends Error {
+  constructor(channel: string) {
+    super(`Rocket.Chat channel does not exist: ${channel}`);
+    this.name = "MissingNotificationChannelError";
+  }
+}
+
 const defaultDelay: Delay = (delayMs) => {
   return new Promise((resolve) => {
     setTimeout(resolve, delayMs);
@@ -30,6 +37,7 @@ export class NotificationDeliveryService implements NotificationDeliveryPort {
     private readonly notificationService: NotificationService,
     private readonly retryPolicy: RetryPolicy,
     private readonly logger: FastifyBaseLogger,
+    private readonly channelCheckEnabled = false,
     private readonly delay: Delay = defaultDelay
   ) {}
 
@@ -37,6 +45,25 @@ export class NotificationDeliveryService implements NotificationDeliveryPort {
     input: SendNotificationInput,
     context: DeliveryContext
   ): Promise<SendNotificationResult> {
+    if (this.channelCheckEnabled) {
+      const channelExists = await this.notificationService.channelExists(input.channel);
+      this.logger.info(
+        {
+          eventId: context.eventId,
+          correlationId: context.correlationId,
+          channel: input.channel,
+          channelCheckEnabled: this.channelCheckEnabled,
+          channelExists
+        },
+        "rocket.chat channel check completed"
+      );
+
+      if (!channelExists) {
+        metrics.notificationsDeliveryAttemptsTotal.inc({ result: "failure" });
+        throw new MissingNotificationChannelError(input.channel);
+      }
+    }
+
     for (let attempt = 1; attempt <= this.retryPolicy.attempts; attempt += 1) {
       try {
         const result = await this.notificationService.send(input);
