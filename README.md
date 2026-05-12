@@ -154,6 +154,8 @@ See [docs/event-contracts.md](docs/event-contracts.md) for payload contracts.
 ## Local Rocket.Chat smoke test
 
 For the full end-to-end checklist, use [docs/e2e-smoke-test.md](docs/e2e-smoke-test.md).
+For the one-developer local MVP runbook, use
+[docs/single-user-local-mvp.md](docs/single-user-local-mvp.md).
 For checking the stack from other machines in an office LAN, use
 [docs/office-lan-test.md](docs/office-lan-test.md).
 
@@ -274,6 +276,7 @@ yarn test
 yarn publish:test-event
 yarn dlq:last
 yarn smoke:http
+yarn smoke:local
 yarn format
 ```
 
