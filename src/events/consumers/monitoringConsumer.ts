@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
 
+import type { IdempotencyStore } from "../idempotency/idempotencyStore.js";
 import type { NotificationDeliveryPort } from "../../modules/notifications/delivery/notificationDeliveryService.js";
 import { processJetStreamMessage } from "../eventBus/ackStrategy.js";
 import { buildDurableName, buildSubject } from "../eventBus/subjectBuilder.js";
@@ -13,6 +14,7 @@ type MonitoringConsumerInput = {
   durablePrefix: string;
   dlqSubject: string;
   notificationDeliveryService: NotificationDeliveryPort;
+  idempotencyStore: IdempotencyStore;
   logger: FastifyBaseLogger;
 };
 
@@ -23,6 +25,7 @@ export const startMonitoringConsumer = async ({
   durablePrefix,
   dlqSubject,
   notificationDeliveryService,
+  idempotencyStore,
   logger
 }: MonitoringConsumerInput): Promise<void> => {
   await natsClient.subscribeDurable({
@@ -35,7 +38,13 @@ export const startMonitoringConsumer = async ({
         dlqSubject,
         logger,
         handleEvent: (subject, data) =>
-          handleIncomingEvent({ subject, data, notificationDeliveryService, logger }),
+          handleIncomingEvent({
+            subject,
+            data,
+            notificationDeliveryService,
+            idempotencyStore,
+            logger
+          }),
         publishDlq: (subject, payload) => natsClient.publishJetStream(subject, payload)
       })
   });

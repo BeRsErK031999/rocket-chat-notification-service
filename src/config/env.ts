@@ -15,7 +15,8 @@ const envSchema = z.object({
   NATS_DURABLE_PREFIX: z.string().min(1).default("rocket-chat-notification-service"),
   NATS_DLQ_SUBJECT: z.string().min(1).default("notifications.dlq"),
   DELIVERY_RETRY_ATTEMPTS: z.coerce.number().int().positive().default(3),
-  DELIVERY_RETRY_DELAY_MS: z.coerce.number().int().nonnegative().default(500)
+  DELIVERY_RETRY_DELAY_MS: z.coerce.number().int().nonnegative().default(500),
+  IDEMPOTENCY_TTL_MS: z.coerce.number().int().positive().default(86400000)
 });
 
 export const env = envSchema.parse(process.env);

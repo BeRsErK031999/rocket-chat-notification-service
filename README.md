@@ -83,6 +83,7 @@ notification metadata and logs when provided.
 Event processing returns an internal structured status:
 
 - `success`
+- `duplicate_skipped`
 - `validation_failed`
 - `mapping_failed`
 - `delivery_failed`
@@ -94,6 +95,10 @@ validation and mapping have succeeded. See [docs/delivery.md](docs/delivery.md).
 NATS consumers use JetStream durable consumers with explicit ack. `delivery_failed` messages
 are published to `notifications.dlq` and then acknowledged to avoid infinite redelivery loops.
 See [docs/jetstream.md](docs/jetstream.md).
+
+NATS event delivery uses an in-memory idempotency guard keyed by `eventId`. Duplicate events
+are skipped with result `duplicate_skipped` while the event id is still within TTL. See
+[docs/idempotency.md](docs/idempotency.md).
 
 ## Observability
 
@@ -167,6 +172,7 @@ NATS_DURABLE_PREFIX=rocket-chat-notification-service
 NATS_DLQ_SUBJECT=notifications.dlq
 DELIVERY_RETRY_ATTEMPTS=3
 DELIVERY_RETRY_DELAY_MS=500
+IDEMPOTENCY_TTL_MS=86400000
 ```
 
 Run the notification service locally:

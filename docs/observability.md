@@ -25,6 +25,7 @@ rocket_chat_healthcheck_total{result}
 `events_processed_total` uses the existing processing result values:
 
 - `success`
+- `duplicate_skipped`
 - `validation_failed`
 - `mapping_failed`
 - `delivery_failed`

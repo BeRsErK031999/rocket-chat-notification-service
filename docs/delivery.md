@@ -22,6 +22,7 @@ No retry is attempted for:
 
 - `validation_failed`
 - `mapping_failed`
+- `duplicate_skipped`
 
 Retry logs include:
 

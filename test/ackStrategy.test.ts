@@ -69,6 +69,27 @@ describe("processJetStreamMessage", () => {
     expect(ack).toHaveBeenCalledOnce();
   });
 
+  it("acks duplicate skipped events without publishing to DLQ", async () => {
+    const ack = vi.fn<() => void>();
+    const publishDlq = vi.fn<(subject: string, payload: unknown) => Promise<void>>();
+
+    const result = await processJetStreamMessage({
+      message: {
+        subject: "notifications.finance.budget.exceeded",
+        data: { eventId: "event-1" },
+        ack
+      },
+      dlqSubject: "notifications.dlq",
+      logger,
+      handleEvent: () => Promise.resolve({ status: "duplicate_skipped", eventId: "event-1" }),
+      publishDlq
+    });
+
+    expect(result).toEqual({ status: "duplicate_skipped", eventId: "event-1" });
+    expect(publishDlq).not.toHaveBeenCalled();
+    expect(ack).toHaveBeenCalledOnce();
+  });
+
   it("publishes delivery failures to DLQ and acks the original message", async () => {
     const ack = vi.fn<() => void>();
     const publishDlq = vi

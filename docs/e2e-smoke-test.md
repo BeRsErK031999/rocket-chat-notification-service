@@ -91,6 +91,7 @@ NATS_DURABLE_PREFIX=rocket-chat-notification-service
 NATS_DLQ_SUBJECT=notifications.dlq
 DELIVERY_RETRY_ATTEMPTS=3
 DELIVERY_RETRY_DELAY_MS=500
+IDEMPOTENCY_TTL_MS=86400000
 ```
 
 ## 5. Start notification-service

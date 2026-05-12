@@ -6,6 +6,8 @@ import { startMonitoringConsumer } from "./events/consumers/monitoringConsumer.j
 import { startProjectConsumer } from "./events/consumers/projectConsumer.js";
 import { NatsClient } from "./events/eventBus/natsClient.js";
 import { buildSupportedSubjects } from "./events/eventBus/subjectBuilder.js";
+import { InMemoryIdempotencyStore } from "./events/idempotency/inMemoryIdempotencyStore.js";
+import type { IdempotencyStore } from "./events/idempotency/idempotencyStore.js";
 import { RocketChatClient } from "./integrations/rocket-chat/rocketChatClient.js";
 import type { RocketChatClientPort } from "./integrations/rocket-chat/rocketChatTypes.js";
 import { NotificationDeliveryService } from "./modules/notifications/delivery/notificationDeliveryService.js";
@@ -20,11 +22,13 @@ type BuildAppOptions = {
   enableNatsConsumers?: boolean;
   rocketChatClient?: RocketChatClientPort;
   internalApiKey?: string | undefined;
+  idempotencyStore?: IdempotencyStore;
 };
 
 export const buildApp = ({
   enableNatsConsumers = process.env.NODE_ENV !== "test",
   internalApiKey = env.INTERNAL_API_KEY,
+  idempotencyStore = new InMemoryIdempotencyStore(env.IDEMPOTENCY_TTL_MS),
   rocketChatClient = new RocketChatClient(
     env.ROCKET_CHAT_URL,
     env.ROCKET_CHAT_USER_ID,
@@ -77,6 +81,7 @@ export const buildApp = ({
         durablePrefix: env.NATS_DURABLE_PREFIX,
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
+        idempotencyStore,
         logger: app.log
       });
       await startProjectConsumer({
@@ -86,6 +91,7 @@ export const buildApp = ({
         durablePrefix: env.NATS_DURABLE_PREFIX,
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
+        idempotencyStore,
         logger: app.log
       });
       await startMonitoringConsumer({
@@ -95,6 +101,7 @@ export const buildApp = ({
         durablePrefix: env.NATS_DURABLE_PREFIX,
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
+        idempotencyStore,
         logger: app.log
       });
 

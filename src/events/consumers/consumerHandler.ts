@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { eventContractSchema } from "../contracts/index.js";
 import type { NotificationEvent } from "../contracts/index.js";
+import type { IdempotencyStore } from "../idempotency/idempotencyStore.js";
 import type { NotificationDeliveryPort } from "../../modules/notifications/delivery/notificationDeliveryService.js";
 import { mapNotificationEvent } from "../../modules/notifications/mappers/notificationEventMapper.js";
 import type { SendNotificationInput } from "../../modules/notifications/notificationTypes.js";
@@ -10,6 +11,7 @@ import { metrics } from "../../observability/metrics.js";
 
 export type EventProcessingResult =
   | { status: "success"; eventId: string; correlationId?: string }
+  | { status: "duplicate_skipped"; eventId: string; correlationId?: string }
   | { status: "validation_failed" }
   | { status: "mapping_failed"; eventId: string; correlationId?: string }
   | { status: "delivery_failed"; eventId: string; correlationId?: string };
@@ -41,6 +43,7 @@ type HandleEventInput = {
   subject: string;
   data: unknown;
   notificationDeliveryService: NotificationDeliveryPort;
+  idempotencyStore: IdempotencyStore;
   logger: FastifyBaseLogger;
   mapEvent?: (event: NotificationEvent) => SendNotificationInput;
 };
@@ -66,6 +69,7 @@ export const handleIncomingEvent = async ({
   subject,
   data,
   notificationDeliveryService,
+  idempotencyStore,
   logger,
   mapEvent = mapNotificationEvent
 }: HandleEventInput): Promise<EventProcessingResult> => {
@@ -81,6 +85,12 @@ export const handleIncomingEvent = async ({
     };
 
     logger.info(logContext, "nats event received");
+
+    if (idempotencyStore.has(event.eventId)) {
+      logger.info({ ...logContext, result: "duplicate_skipped" }, "duplicate nats event skipped");
+      recordEventProcessed(event.event, "duplicate_skipped");
+      return buildResult("duplicate_skipped", event.eventId, event.correlationId);
+    }
 
     let notification: SendNotificationInput;
 
@@ -103,6 +113,7 @@ export const handleIncomingEvent = async ({
     }
 
     logger.info(logContext, "nats event processed");
+    idempotencyStore.record(event.eventId);
     recordEventProcessed(event.event, "success");
 
     return buildResult("success", event.eventId, event.correlationId);
