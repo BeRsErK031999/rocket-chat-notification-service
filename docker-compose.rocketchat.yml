@@ -7,13 +7,13 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      ROOT_URL: http://localhost:3000
+      ROOT_URL: http://localhost:3100
       PORT: 3000
       MONGO_URL: mongodb://mongo:27017/rocketchat?replicaSet=rs0&directConnection=true
       MONGO_OPLOG_URL: mongodb://mongo:27017/local?replicaSet=rs0&directConnection=true
       DEPLOY_METHOD: docker
     ports:
-      - "3000:3000"
+      - "3100:3000"
     healthcheck:
       test:
         [
@@ -26,7 +26,7 @@ services:
       start_period: 90s
 
   mongo:
-    image: mongo:6
+    image: mongo:8
     container_name: notification-service-mongo
     restart: unless-stopped
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]

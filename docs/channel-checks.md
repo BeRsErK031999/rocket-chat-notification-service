@@ -8,6 +8,7 @@ ROCKET_CHAT_CHANNEL_CHECK_ENABLED=false
 ```
 
 The default is `false`, so existing delivery behavior is unchanged.
+For local Rocket.Chat dev setup, use `ROCKET_CHAT_URL=http://localhost:3100`.
 
 ## Behavior
 

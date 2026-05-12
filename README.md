@@ -163,7 +163,7 @@ Start the local Rocket.Chat infrastructure:
 docker compose -f docker-compose.rocketchat.yml up -d
 ```
 
-Open `http://localhost:3000`, create the first admin/user, create a channel, and get a
+Open `http://localhost:3100`, create the first admin/user, create a channel, and get a
 Rocket.Chat user id and auth token. See [docs/local-rocketchat.md](docs/local-rocketchat.md)
 for the full step-by-step flow.
 
@@ -171,7 +171,7 @@ Fill `.env` with the local Rocket.Chat values:
 
 ```bash
 PORT=4000
-ROCKET_CHAT_URL=http://localhost:3000
+ROCKET_CHAT_URL=http://localhost:3100
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
 INTERNAL_API_KEY=<internal-api-key>

@@ -29,7 +29,7 @@ Rocket.Chat can take several minutes on the first boot.
 Open:
 
 ```text
-http://localhost:3000
+http://localhost:3100
 ```
 
 Complete first-run setup and create an admin or test user.
@@ -51,7 +51,7 @@ The service sends to it as:
 Use the Rocket.Chat login API with the local username and password:
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/login \
+curl -X POST http://localhost:3100/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"user":"admin","password":"change-me"}'
 ```
@@ -80,7 +80,7 @@ Set:
 ```text
 PORT=4000
 LOG_LEVEL=info
-ROCKET_CHAT_URL=http://localhost:3000
+ROCKET_CHAT_URL=http://localhost:3100
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
 INTERNAL_API_KEY=<internal-api-key>
@@ -214,13 +214,13 @@ First boot can take several minutes. Watch logs:
 docker compose -f docker-compose.rocketchat.yml logs -f rocketchat
 ```
 
-Wait until `http://localhost:3000` opens.
+Wait until `http://localhost:3100` opens.
 
 ### `/ready` returns `503`
 
 `/ready` checks Rocket.Chat availability. Verify:
 
-- `ROCKET_CHAT_URL=http://localhost:3000`
+- `ROCKET_CHAT_URL=http://localhost:3100`
 - Rocket.Chat is reachable in the browser
 - `ROCKET_CHAT_USER_ID` and `ROCKET_CHAT_AUTH_TOKEN` are from the same login response
 
@@ -229,7 +229,7 @@ Wait until `http://localhost:3000` opens.
 Refresh credentials with:
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/login \
+curl -X POST http://localhost:3100/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"user":"admin","password":"change-me"}'
 ```

@@ -21,7 +21,7 @@ docker compose -f docker-compose.rocketchat.yml logs -f rocketchat
 Open:
 
 ```text
-http://localhost:3000
+http://localhost:3100
 ```
 
 Complete the first-run setup in the Rocket.Chat UI.
@@ -50,7 +50,7 @@ When sending through this service, use the channel value with a leading `#`:
 Use the Rocket.Chat login API with the local username and password you created:
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/login \
+curl -X POST http://localhost:3100/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"user":"admin","password":"change-me"}'
 ```
@@ -82,13 +82,13 @@ Set the local values:
 ```bash
 PORT=4000
 LOG_LEVEL=info
-ROCKET_CHAT_URL=http://localhost:3000
+ROCKET_CHAT_URL=http://localhost:3100
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
 ```
 
 `PORT=4000` keeps the notification-service from conflicting with Rocket.Chat on
-`localhost:3000`.
+`localhost:3100`.
 
 ## 7. Start notification-service
 
@@ -146,7 +146,7 @@ docker compose -f docker-compose.rocketchat.yml ps
 docker compose -f docker-compose.rocketchat.yml logs -f rocketchat
 ```
 
-Wait until `http://localhost:3000` opens and the setup screen or login screen is
+Wait until `http://localhost:3100` opens and the setup screen or login screen is
 available.
 
 ### Invalid Token
@@ -168,7 +168,7 @@ request body. Public channels are sent as `#channel-name`.
 
 ### Port Is Busy
 
-Rocket.Chat uses `localhost:3000`. The notification-service example uses
+Rocket.Chat uses `localhost:3100`. The notification-service example uses
 `PORT=4000`. If either port is busy, stop the conflicting process or update the
 host port in `docker-compose.rocketchat.yml` and the matching URL in `.env`.
 

@@ -9,7 +9,7 @@ services:
     environment:
       PORT: 4000
       LOG_LEVEL: ${LOG_LEVEL:-info}
-      ROCKET_CHAT_URL: ${ROCKET_CHAT_URL:-http://host.docker.internal:3000}
+      ROCKET_CHAT_URL: ${ROCKET_CHAT_URL:-http://host.docker.internal:3100}
       ROCKET_CHAT_USER_ID: ${ROCKET_CHAT_USER_ID:-rocket-chat-user-id}
       ROCKET_CHAT_AUTH_TOKEN: ${ROCKET_CHAT_AUTH_TOKEN:-rocket-chat-auth-token}
       NATS_URL: ${NATS_URL:-nats://host.docker.internal:4222}

@@ -7,7 +7,7 @@ office network. It does not require reverse proxy or HTTPS for the test.
 
 ```text
 office client machines
-  -> server machine:3000 Rocket.Chat UI
+  -> server machine:3100 Rocket.Chat UI
   -> server machine:4000 notification-service
   -> server machine:4222 NATS
 
@@ -28,7 +28,7 @@ Open these ports on the server machine:
 
 | Port | Service | Used by |
 | --- | --- | --- |
-| `3000` | Rocket.Chat UI/API | browsers, login API, notification-service |
+| `3100` | Rocket.Chat UI/API | browsers, login API, notification-service |
 | `4000` | notification-service | health, ready, metrics, HTTP notifications |
 | `4222` | NATS | other microservices and local test publishers |
 
@@ -52,7 +52,7 @@ In the examples below, replace `SERVER_IP` with that address.
 
 On the server machine:
 
-- Allow inbound TCP `3000` for Rocket.Chat.
+- Allow inbound TCP `3100` for Rocket.Chat.
 - Allow inbound TCP `4000` for notification-service.
 - Allow inbound TCP `4222` for NATS.
 - Make sure the rule applies to the current network profile, usually Private or Domain.
@@ -63,7 +63,7 @@ On the server machine:
 Example PowerShell commands run as Administrator:
 
 ```powershell
-New-NetFirewallRule -DisplayName "Rocket.Chat LAN 3000" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow
+New-NetFirewallRule -DisplayName "Rocket.Chat LAN 3100" -Direction Inbound -Protocol TCP -LocalPort 3100 -Action Allow
 New-NetFirewallRule -DisplayName "Notification Service LAN 4000" -Direction Inbound -Protocol TCP -LocalPort 4000 -Action Allow
 New-NetFirewallRule -DisplayName "NATS LAN 4222" -Direction Inbound -Protocol TCP -LocalPort 4222 -Action Allow
 ```
@@ -87,7 +87,7 @@ yarn dev
 For LAN testing, configure `.env` on the server with LAN-reachable URLs:
 
 ```text
-ROCKET_CHAT_URL=http://SERVER_IP:3000
+ROCKET_CHAT_URL=http://SERVER_IP:3100
 NATS_URL=nats://SERVER_IP:4222
 APP_BASE_URL=http://SERVER_IP:<frontend-port>
 ```
@@ -106,7 +106,7 @@ Do not commit real credentials. Restart `yarn dev` after changing `.env`.
 From an office client machine, open:
 
 ```text
-http://SERVER_IP:3000
+http://SERVER_IP:3100
 http://SERVER_IP:4000/health
 http://SERVER_IP:4000/ready
 http://SERVER_IP:4000/metrics
@@ -114,7 +114,7 @@ http://SERVER_IP:4000/metrics
 
 Expected results:
 
-- Rocket.Chat UI opens on `:3000`.
+- Rocket.Chat UI opens on `:3100`.
 - `/health` returns `{"status":"ok"}`.
 - `/ready` returns `200` when Rocket.Chat URL and token are valid.
 - `/metrics` returns Prometheus-style text.
@@ -180,21 +180,21 @@ routing rules, and sends it to Rocket.Chat.
 
 ### Cannot Reach Rocket.Chat UI
 
-Check that `http://SERVER_IP:3000` opens on the server itself first. Then check Docker status:
+Check that `http://SERVER_IP:3100` opens on the server itself first. Then check Docker status:
 
 ```bash
 docker compose -f docker-compose.rocketchat.yml ps
 docker compose -f docker-compose.rocketchat.yml logs -f rocketchat
 ```
 
-If it works on the server but not on another PC, check Windows Firewall for port `3000` and
+If it works on the server but not on another PC, check Windows Firewall for port `3100` and
 confirm both machines are on the same LAN/VPN segment.
 
 ### `/ready` Returns `503`
 
 `/ready` checks Rocket.Chat availability from notification-service. Verify:
 
-- `ROCKET_CHAT_URL=http://SERVER_IP:3000`
+- `ROCKET_CHAT_URL=http://SERVER_IP:3100`
 - Rocket.Chat is reachable from the server
 - `ROCKET_CHAT_USER_ID` and `ROCKET_CHAT_AUTH_TOKEN` are valid and from the same login
 - notification-service was restarted after `.env` changes
@@ -221,7 +221,7 @@ Temporarily test from another PC with:
 
 ```powershell
 Test-NetConnection SERVER_IP -Port 4000
-Test-NetConnection SERVER_IP -Port 3000
+Test-NetConnection SERVER_IP -Port 3100
 Test-NetConnection SERVER_IP -Port 4222
 ```
 
@@ -233,7 +233,7 @@ profile on the server.
 Refresh credentials with the Rocket.Chat login API against the LAN URL:
 
 ```bash
-curl -X POST http://SERVER_IP:3000/api/v1/login \
+curl -X POST http://SERVER_IP:3100/api/v1/login \
   -H "Content-Type: application/json" \
   -d '{"user":"admin","password":"change-me"}'
 ```

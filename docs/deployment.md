@@ -14,7 +14,7 @@ docker build -t rocket-chat-notification-service:local .
 ```bash
 docker run --rm -p 4000:4000 \
   -e PORT=4000 \
-  -e ROCKET_CHAT_URL=http://host.docker.internal:3000 \
+  -e ROCKET_CHAT_URL=http://host.docker.internal:3100 \
   -e ROCKET_CHAT_USER_ID=<rocket-chat-user-id> \
   -e ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token> \
   -e NATS_URL=nats://host.docker.internal:4222 \
@@ -43,7 +43,7 @@ network topology needs different hostnames.
 
 ```text
 PORT=4000
-ROCKET_CHAT_URL=http://host.docker.internal:3000
+ROCKET_CHAT_URL=http://host.docker.internal:3100
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
 NATS_URL=nats://host.docker.internal:4222
