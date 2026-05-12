@@ -17,4 +17,3 @@ Before considering a change done, run:
 - `yarn type-check`
 - `yarn lint`
 - `yarn test`
-
