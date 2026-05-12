@@ -4,6 +4,7 @@ import { baseEventSchema } from "../baseEvent.js";
 
 export const financeBudgetExceededPayloadSchema = z
   .object({
+    projectId: z.string().min(1).optional(),
     budgetId: z.string().min(1),
     budgetName: z.string().min(1),
     actualAmount: z.number().nonnegative(),

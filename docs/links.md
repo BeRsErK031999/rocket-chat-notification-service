@@ -28,8 +28,8 @@ Finance events render an `Open finance` link when `projectId` is available to th
 [Open finance](https://app.example.test/projects/project-1/finance)
 ```
 
-The current `finance.budget.exceeded` event contract does not include `projectId`, so valid
-finance events do not render this link unless the contract is extended in the future.
+`finance.budget.exceeded.payload.projectId` is optional, so finance events without project
+context still validate and render without a broken link.
 
 Monitoring events render an `Open monitoring` link when `employeeId` is present:
 

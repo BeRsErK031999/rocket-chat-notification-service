@@ -22,6 +22,26 @@ describe("event contracts", () => {
     expect(result.success).toBe(true);
   });
 
+  it("validates a finance event with optional projectId", () => {
+    const result = eventContractSchema.safeParse({
+      eventId: "event-1",
+      event: "finance.budget.exceeded",
+      timestamp: "2026-05-12T00:00:00.000Z",
+      source: "finance-service",
+      severity: "critical",
+      payload: {
+        projectId: "project-1",
+        budgetId: "budget-1",
+        budgetName: "Ops",
+        actualAmount: 120,
+        limitAmount: 100,
+        currency: "USD"
+      }
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("rejects unsupported events", () => {
     const result = eventContractSchema.safeParse({
       eventId: "event-1",

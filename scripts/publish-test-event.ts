@@ -12,6 +12,7 @@ const event = {
   source: "local-dev-publisher",
   severity: "critical",
   payload: {
+    projectId: "project-local-001",
     budgetId: "budget-local-001",
     budgetName: "Local test budget",
     actualAmount: 125000,

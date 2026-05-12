@@ -154,7 +154,7 @@ describe("mapNotificationEvent", () => {
 
   it("renders finance link when projectId exists", () => {
     const mapEvent = createNotificationEventMapper(undefined, linkConfig);
-    const event = {
+    const event: NotificationEvent = {
       eventId: "event-6",
       event: "finance.budget.exceeded",
       timestamp: "2026-05-12T00:00:00.000Z",
@@ -168,11 +168,31 @@ describe("mapNotificationEvent", () => {
         limitAmount: 100,
         currency: "USD"
       }
-    } as unknown as NotificationEvent;
+    };
 
     expect(mapEvent(event).text).toContain(
       "[Open finance](https://app.example.test/projects/project-1/finance)"
     );
+  });
+
+  it("valid finance events without projectId render without finance link", () => {
+    const mapEvent = createNotificationEventMapper(undefined, linkConfig);
+    const event: NotificationEvent = {
+      eventId: "event-6-without-project",
+      event: "finance.budget.exceeded",
+      timestamp: "2026-05-12T00:00:00.000Z",
+      source: "finance-service",
+      severity: "critical",
+      payload: {
+        budgetId: "budget-1",
+        budgetName: "Ops",
+        actualAmount: 120,
+        limitAmount: 100,
+        currency: "USD"
+      }
+    };
+
+    expect(mapEvent(event).text).toBe('*[critical]* Budget "Ops" exceeded: 120 USD / 100 USD.');
   });
 
   it("renders monitoring link when employeeId exists", () => {

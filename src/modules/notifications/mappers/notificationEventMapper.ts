@@ -26,16 +26,6 @@ export const mapNotificationEvent = (event: NotificationEvent): MappedNotificati
   return createNotificationEventMapper()(event);
 };
 
-const readOptionalString = (value: object, field: string): string | undefined => {
-  if (!(field in value)) {
-    return undefined;
-  }
-
-  const fieldValue = value[field as keyof typeof value];
-
-  return typeof fieldValue === "string" ? fieldValue : undefined;
-};
-
 const templateInputFor = (
   event: NotificationEvent,
   linkConfig: NotificationLinkConfig
@@ -78,19 +68,18 @@ const templateInputFor = (
     }
 
     case "finance.budget.exceeded": {
-      const projectId = readOptionalString(event.payload, "projectId");
       const linkData: NotificationLinkData =
-        projectId === undefined
+        event.payload.projectId === undefined
           ? {}
           : {
-              projectId
+              projectId: event.payload.projectId
             };
 
       return {
         event: event.event,
         severity: event.severity ?? "critical",
         data: {
-          ...(projectId === undefined ? {} : { projectId }),
+          ...(event.payload.projectId === undefined ? {} : { projectId: event.payload.projectId }),
           budgetName: event.payload.budgetName,
           actualAmount: event.payload.actualAmount,
           limitAmount: event.payload.limitAmount,

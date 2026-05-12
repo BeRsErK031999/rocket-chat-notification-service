@@ -55,6 +55,7 @@ Subject: `notifications.finance.budget.exceeded`
   "source": "finance-service",
   "severity": "critical",
   "payload": {
+    "projectId": "project-1",
     "budgetId": "budget-1",
     "budgetName": "Ops",
     "actualAmount": 120000,
@@ -64,6 +65,9 @@ Subject: `notifications.finance.budget.exceeded`
   }
 }
 ```
+
+`projectId` is optional for backward compatibility. When present and `APP_BASE_URL` is
+configured, notification templates can render a finance page link.
 
 ### `project.deadline.overdue`
 
@@ -133,3 +137,5 @@ Subject: `notifications.monitoring.employee.afk`
 
 `channel` remains an optional payload field for compatibility, but NATS event delivery uses
 the notification routing layer to resolve Rocket.Chat channels. See [routing.md](routing.md).
+For field usage across routing, templates, and links, see
+[event-field-matrix.md](event-field-matrix.md).
