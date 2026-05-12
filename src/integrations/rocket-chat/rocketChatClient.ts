@@ -1,4 +1,5 @@
 import { ExternalServiceError } from "../../shared/errors.js";
+import { metrics } from "../../observability/metrics.js";
 import type {
   RocketChatClientPort,
   RocketChatPostMessagePayload,
@@ -33,8 +34,12 @@ export class RocketChatClient implements RocketChatClientPort {
         method: "GET"
       });
 
+      metrics.rocketChatHealthcheckTotal.inc({
+        result: response.ok ? "success" : "failure"
+      });
       return response.ok;
     } catch {
+      metrics.rocketChatHealthcheckTotal.inc({ result: "failure" });
       return false;
     }
   }

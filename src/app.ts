@@ -12,6 +12,8 @@ import { NotificationDeliveryService } from "./modules/notifications/delivery/no
 import { createRetryPolicy } from "./modules/notifications/delivery/retryPolicy.js";
 import { createNotificationRoutes } from "./modules/notifications/notificationRoutes.js";
 import { NotificationService } from "./modules/notifications/notificationService.js";
+import { metrics } from "./observability/metrics.js";
+import { createMetricsRoutes } from "./observability/metricsRoutes.js";
 import { logger } from "./shared/logger.js";
 
 type BuildAppOptions = {
@@ -41,6 +43,16 @@ export const buildApp = ({
 
   void app.register(createNotificationRoutes({ notificationService }), {
     prefix: "/notifications"
+  });
+  void app.register(createMetricsRoutes());
+
+  app.addHook("onResponse", (request, reply, done) => {
+    metrics.httpRequestsTotal.inc({
+      method: request.method,
+      path: request.routeOptions.url ?? request.url,
+      status: String(reply.statusCode)
+    });
+    done();
   });
 
   if (enableNatsConsumers) {

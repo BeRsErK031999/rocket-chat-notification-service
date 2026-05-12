@@ -1,9 +1,10 @@
 import pino from "pino";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { handleIncomingEvent } from "../src/events/consumers/consumerHandler.js";
 import type { NotificationEvent } from "../src/events/contracts/index.js";
 import type { NotificationDeliveryPort } from "../src/modules/notifications/delivery/notificationDeliveryService.js";
+import { metricsRegistry } from "../src/observability/metrics.js";
 
 const validFinanceEvent: NotificationEvent = {
   eventId: "event-1",
@@ -22,6 +23,10 @@ const validFinanceEvent: NotificationEvent = {
 };
 
 describe("handleIncomingEvent", () => {
+  beforeEach(() => {
+    metricsRegistry.reset();
+  });
+
   it("returns validation_failed for invalid events", async () => {
     const deliver = vi.fn<NotificationDeliveryPort["deliver"]>().mockResolvedValue({ ok: true });
     const deliveryService: NotificationDeliveryPort = {
@@ -42,6 +47,9 @@ describe("handleIncomingEvent", () => {
 
     expect(result).toEqual({ status: "validation_failed" });
     expect(deliver).not.toHaveBeenCalled();
+    expect(metricsRegistry.render()).toContain(
+      'events_processed_total{event="finance.budget.exceeded",result="validation_failed"} 1'
+    );
   });
 
   it("returns success when delivery succeeds", async () => {
@@ -63,6 +71,9 @@ describe("handleIncomingEvent", () => {
       correlationId: "correlation-1"
     });
     expect(deliver).toHaveBeenCalledOnce();
+    expect(metricsRegistry.render()).toContain(
+      'events_processed_total{event="finance.budget.exceeded",result="success"} 1'
+    );
   });
 
   it("returns delivery_failed when delivery exhausts retries", async () => {

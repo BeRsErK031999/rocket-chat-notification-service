@@ -1,5 +1,6 @@
 import type { FastifyBaseLogger } from "fastify";
 
+import { metrics } from "../../../observability/metrics.js";
 import type { SendNotificationInput, SendNotificationResult } from "../notificationTypes.js";
 import type { NotificationService } from "../notificationService.js";
 import type { RetryPolicy } from "./retryPolicy.js";
@@ -38,12 +39,17 @@ export class NotificationDeliveryService implements NotificationDeliveryPort {
   ): Promise<SendNotificationResult> {
     for (let attempt = 1; attempt <= this.retryPolicy.attempts; attempt += 1) {
       try {
-        return await this.notificationService.send(input);
+        const result = await this.notificationService.send(input);
+        metrics.notificationsDeliveryAttemptsTotal.inc({ result: "success" });
+        return result;
       } catch (error) {
+        metrics.notificationsDeliveryAttemptsTotal.inc({ result: "failure" });
+
         if (attempt >= this.retryPolicy.attempts) {
           throw error;
         }
 
+        metrics.notificationsDeliveryRetriesTotal.inc();
         loggerRetry(this.logger, context, attempt, this.retryPolicy);
         await this.delay(this.retryPolicy.delayMs);
       }

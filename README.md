@@ -95,6 +95,17 @@ NATS consumers use JetStream durable consumers with explicit ack. `delivery_fail
 are published to `notifications.dlq` and then acknowledged to avoid infinite redelivery loops.
 See [docs/jetstream.md](docs/jetstream.md).
 
+## Observability
+
+The service exposes Prometheus-style text metrics:
+
+```bash
+curl http://localhost:4000/metrics
+```
+
+Metrics cover HTTP requests, event processing results, Rocket.Chat delivery attempts/retries,
+DLQ publishes, and Rocket.Chat health checks. See [docs/observability.md](docs/observability.md).
+
 ## Supported events
 
 - `project.deadline.overdue`
@@ -188,6 +199,10 @@ Returns `200` only when the service configuration is loaded and Rocket.Chat is r
 ```
 
 If Rocket.Chat is unavailable, the endpoint returns `503`.
+
+### `GET /metrics`
+
+Prometheus-style text exposition format.
 
 ### `POST /notifications/send`
 

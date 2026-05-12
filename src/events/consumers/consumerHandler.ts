@@ -6,6 +6,7 @@ import type { NotificationEvent } from "../contracts/index.js";
 import type { NotificationDeliveryPort } from "../../modules/notifications/delivery/notificationDeliveryService.js";
 import { mapNotificationEvent } from "../../modules/notifications/mappers/notificationEventMapper.js";
 import type { SendNotificationInput } from "../../modules/notifications/notificationTypes.js";
+import { metrics } from "../../observability/metrics.js";
 
 export type EventProcessingResult =
   | { status: "success"; eventId: string; correlationId?: string }
@@ -54,6 +55,13 @@ const readStringField = (data: unknown, field: string): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+const recordEventProcessed = (event: string | undefined, result: EventProcessingResult["status"]): void => {
+  metrics.eventsProcessedTotal.inc({
+    event: event ?? "unknown",
+    result
+  });
+};
+
 export const handleIncomingEvent = async ({
   subject,
   data,
@@ -80,6 +88,7 @@ export const handleIncomingEvent = async ({
       notification = mapEvent(event);
     } catch (error) {
       logger.error({ err: error, ...logContext }, "nats event mapping failed");
+      recordEventProcessed(event.event, "mapping_failed");
       return buildResult("mapping_failed", event.eventId, event.correlationId);
     }
 
@@ -89,10 +98,12 @@ export const handleIncomingEvent = async ({
       });
     } catch (error) {
       logger.error({ err: error, ...logContext }, "nats event delivery failed");
+      recordEventProcessed(event.event, "delivery_failed");
       return buildResult("delivery_failed", event.eventId, event.correlationId);
     }
 
     logger.info(logContext, "nats event processed");
+    recordEventProcessed(event.event, "success");
 
     return buildResult("success", event.eventId, event.correlationId);
   } catch (error) {
@@ -109,10 +120,12 @@ export const handleIncomingEvent = async ({
         },
         "invalid nats event ignored"
       );
+      recordEventProcessed(readStringField(data, "event"), "validation_failed");
       return { status: "validation_failed" };
     }
 
     logger.error({ err: error, subject }, "nats event processing failed");
+    recordEventProcessed(readStringField(data, "event"), "validation_failed");
     return { status: "validation_failed" };
   }
 };

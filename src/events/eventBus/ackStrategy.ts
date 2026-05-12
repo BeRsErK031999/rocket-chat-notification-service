@@ -1,6 +1,7 @@
 import type { FastifyBaseLogger } from "fastify";
 
 import type { EventProcessingResult } from "../consumers/consumerHandler.js";
+import { metrics } from "../../observability/metrics.js";
 import { buildDeadLetterPayload } from "./dlq.js";
 
 export type AcknowledgeableMessage = {
@@ -30,6 +31,7 @@ export const processJetStreamMessage = async ({
     const payload = buildDeadLetterPayload(message.subject, message.data, result.status);
 
     await publishDlq(dlqSubject, payload);
+    metrics.dlqPublishedTotal.inc({ event: payload.event ?? "unknown" });
     logger.error(
       {
         eventId: result.eventId,
