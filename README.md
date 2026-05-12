@@ -140,6 +140,8 @@ See [docs/event-contracts.md](docs/event-contracts.md) for payload contracts.
 
 ## Local Rocket.Chat smoke test
 
+For the full end-to-end checklist, use [docs/e2e-smoke-test.md](docs/e2e-smoke-test.md).
+
 Start the local Rocket.Chat infrastructure:
 
 ```bash
@@ -186,6 +188,49 @@ Publish a local NATS test event:
 yarn publish:test-event
 ```
 
+## Smoke test checklist
+
+1. Start Rocket.Chat, MongoDB, and NATS:
+
+```bash
+docker compose -f docker-compose.rocketchat.yml up -d
+```
+
+2. Create a Rocket.Chat user and `#notifications` channel.
+3. Get `userId` and `authToken` from the Rocket.Chat login API.
+4. Fill `.env` with Rocket.Chat and NATS values.
+5. Start the service:
+
+```bash
+yarn dev
+```
+
+6. Check service endpoints:
+
+```bash
+yarn smoke:http
+```
+
+7. Send an HTTP notification:
+
+```bash
+curl -X POST http://localhost:4000/notifications/send \
+  -H "Content-Type: application/json" \
+  -d '{"channel":"#notifications","text":"Local HTTP smoke test"}'
+```
+
+8. Send a NATS event:
+
+```bash
+yarn publish:test-event
+```
+
+9. Confirm the messages in Rocket.Chat and inspect DLQ if needed:
+
+```bash
+yarn dlq:last
+```
+
 ## Commands
 
 ```bash
@@ -197,6 +242,7 @@ yarn lint
 yarn test
 yarn publish:test-event
 yarn dlq:last
+yarn smoke:http
 yarn format
 ```
 
