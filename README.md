@@ -71,7 +71,7 @@ before they are mapped to Rocket.Chat notifications.
 Consumer flow:
 
 ```text
-NATS event -> schema validation -> notification mapper -> notification service -> Rocket.Chat
+NATS event -> schema validation -> notification mapper -> template renderer -> notification service -> Rocket.Chat
 ```
 
 Structured logs include `eventId`, `correlationId`, `subject`, `event`, `severity`, and
@@ -100,9 +100,10 @@ NATS event delivery uses an in-memory idempotency guard keyed by `eventId`. Dupl
 are skipped with result `duplicate_skipped` while the event id is still within TTL. See
 [docs/idempotency.md](docs/idempotency.md).
 
-Notification routing is handled separately from message formatting. The mapper builds
-`text` and `metadata`; routing rules choose the Rocket.Chat channel. See
-[docs/routing.md](docs/routing.md).
+Notification routing is handled separately from message formatting. The mapper prepares
+normalized template data and `metadata`, the template renderer builds Rocket.Chat markdown
+`text`, and routing rules choose the Rocket.Chat channel. See
+[docs/templates.md](docs/templates.md) and [docs/routing.md](docs/routing.md).
 
 ## Observability
 

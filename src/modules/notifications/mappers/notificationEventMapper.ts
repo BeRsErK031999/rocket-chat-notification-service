@@ -1,5 +1,10 @@
 import type { NotificationEvent } from "../../../events/contracts/index.js";
 import type { MappedNotification, SendNotificationInput } from "../notificationTypes.js";
+import { renderNotificationTemplate } from "../templates/notificationTemplateRenderer.js";
+import type {
+  NotificationTemplateInput,
+  NotificationTemplateRenderer
+} from "../templates/notificationTemplateTypes.js";
 
 const metadataFor = (
   event: NotificationEvent
@@ -13,29 +18,62 @@ const metadataFor = (
 });
 
 export const mapNotificationEvent = (event: NotificationEvent): MappedNotification => {
+  return createNotificationEventMapper()(event);
+};
+
+const templateInputFor = (event: NotificationEvent): NotificationTemplateInput => {
   switch (event.event) {
     case "project.deadline.overdue":
       return {
-        text: `[${event.severity ?? "warning"}] Project "${event.payload.projectName}" is overdue by ${event.payload.daysOverdue} day(s). Deadline: ${event.payload.deadline}.`,
-        metadata: metadataFor(event)
+        event: event.event,
+        severity: event.severity ?? "warning",
+        data: {
+          projectName: event.payload.projectName,
+          deadline: event.payload.deadline,
+          daysOverdue: event.payload.daysOverdue
+        }
       };
 
     case "project.member.overallocated":
       return {
-        text: `[${event.severity ?? "warning"}] ${event.payload.memberName} is allocated at ${event.payload.allocationPercent}% on project "${event.payload.projectName}".`,
-        metadata: metadataFor(event)
+        event: event.event,
+        severity: event.severity ?? "warning",
+        data: {
+          projectName: event.payload.projectName,
+          memberName: event.payload.memberName,
+          allocationPercent: event.payload.allocationPercent
+        }
       };
 
     case "finance.budget.exceeded":
       return {
-        text: `[${event.severity ?? "critical"}] Budget "${event.payload.budgetName}" exceeded: ${event.payload.actualAmount} ${event.payload.currency} / ${event.payload.limitAmount} ${event.payload.currency}.`,
-        metadata: metadataFor(event)
+        event: event.event,
+        severity: event.severity ?? "critical",
+        data: {
+          budgetName: event.payload.budgetName,
+          actualAmount: event.payload.actualAmount,
+          limitAmount: event.payload.limitAmount,
+          currency: event.payload.currency
+        }
       };
 
     case "monitoring.employee.afk":
       return {
-        text: `[${event.severity ?? "warning"}] ${event.payload.employeeName} has been AFK for ${event.payload.minutesAfk} minute(s).`,
-        metadata: metadataFor(event)
+        event: event.event,
+        severity: event.severity ?? "warning",
+        data: {
+          employeeName: event.payload.employeeName,
+          minutesAfk: event.payload.minutesAfk
+        }
       };
   }
 };
+
+export const createNotificationEventMapper =
+  (renderTemplate: NotificationTemplateRenderer = renderNotificationTemplate) =>
+  (event: NotificationEvent): MappedNotification => {
+    return {
+      text: renderTemplate(templateInputFor(event)),
+      metadata: metadataFor(event)
+    };
+  };

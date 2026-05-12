@@ -3,7 +3,7 @@
 Notification event handling is split into two steps:
 
 ```text
-event -> mapper builds text/metadata -> router resolves channel -> delivery
+event -> mapper prepares template data/metadata -> renderer builds text -> router resolves channel -> delivery
 ```
 
 The mapper does not choose Rocket.Chat channels for NATS events. Channel selection is handled
