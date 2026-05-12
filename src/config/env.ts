@@ -8,6 +8,7 @@ const envSchema = z.object({
   ROCKET_CHAT_URL: z.string().url(),
   ROCKET_CHAT_USER_ID: z.string().min(1),
   ROCKET_CHAT_AUTH_TOKEN: z.string().min(1),
+  INTERNAL_API_KEY: z.string().optional(),
   NATS_URL: z.string().url().default("nats://localhost:4222"),
   NATS_PREFIX: z.string().min(1).default("notifications"),
   NATS_STREAM_NAME: z.string().min(1).default("NOTIFICATIONS"),

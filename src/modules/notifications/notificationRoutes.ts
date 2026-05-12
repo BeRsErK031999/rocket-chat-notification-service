@@ -2,18 +2,25 @@ import type { FastifyPluginCallback } from "fastify";
 import { ZodError } from "zod";
 
 import { AppError } from "../../shared/errors.js";
+import { requireInternalApiKey } from "../../shared/auth/internalApiKey.js";
 import { sendNotificationSchema } from "./notificationSchemas.js";
 import type { NotificationService } from "./notificationService.js";
 
 type NotificationRoutesOptions = {
   notificationService: NotificationService;
+  internalApiKey?: string | undefined;
 };
 
 export const createNotificationRoutes = ({
-  notificationService
+  notificationService,
+  internalApiKey
 }: NotificationRoutesOptions): FastifyPluginCallback => {
   return (fastify, _options, done) => {
     fastify.post("/send", async (request, reply) => {
+      if (!requireInternalApiKey(internalApiKey, request, reply)) {
+        return reply;
+      }
+
       try {
         const body = sendNotificationSchema.parse(request.body);
         const result = await notificationService.send(body);

@@ -83,6 +83,7 @@ LOG_LEVEL=info
 ROCKET_CHAT_URL=http://localhost:3000
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
+INTERNAL_API_KEY=<internal-api-key>
 NATS_URL=nats://localhost:4222
 NATS_PREFIX=notifications
 NATS_STREAM_NAME=NOTIFICATIONS
@@ -128,8 +129,11 @@ Expected:
 ```bash
 curl -X POST http://localhost:4000/notifications/send \
   -H "Content-Type: application/json" \
+  -H "x-internal-api-key: <internal-api-key>" \
   -d '{"channel":"#notifications","text":"Local HTTP smoke test"}'
 ```
+
+If `INTERNAL_API_KEY` is not set in `.env`, omit the `x-internal-api-key` header.
 
 Expected response:
 

@@ -19,10 +19,12 @@ import { logger } from "./shared/logger.js";
 type BuildAppOptions = {
   enableNatsConsumers?: boolean;
   rocketChatClient?: RocketChatClientPort;
+  internalApiKey?: string | undefined;
 };
 
 export const buildApp = ({
   enableNatsConsumers = process.env.NODE_ENV !== "test",
+  internalApiKey = env.INTERNAL_API_KEY,
   rocketChatClient = new RocketChatClient(
     env.ROCKET_CHAT_URL,
     env.ROCKET_CHAT_USER_ID,
@@ -41,7 +43,14 @@ export const buildApp = ({
   );
   const natsClient = new NatsClient(env.NATS_URL);
 
-  void app.register(createNotificationRoutes({ notificationService }), {
+  if (internalApiKey === undefined || internalApiKey.length === 0) {
+    app.log.warn(
+      { endpoint: "POST /notifications/send" },
+      "INTERNAL_API_KEY is not configured; HTTP notification endpoint is unprotected"
+    );
+  }
+
+  void app.register(createNotificationRoutes({ notificationService, internalApiKey }), {
     prefix: "/notifications"
   });
   void app.register(createMetricsRoutes());

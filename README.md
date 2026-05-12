@@ -159,6 +159,7 @@ PORT=4000
 ROCKET_CHAT_URL=http://localhost:3000
 ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
+INTERNAL_API_KEY=<internal-api-key>
 NATS_URL=nats://localhost:4222
 NATS_PREFIX=notifications
 NATS_STREAM_NAME=NOTIFICATIONS
@@ -179,8 +180,12 @@ Send a test notification:
 ```bash
 curl -X POST http://localhost:4000/notifications/send \
   -H "Content-Type: application/json" \
+  -H "x-internal-api-key: <internal-api-key>" \
   -d '{"channel":"#notifications","text":"Local Rocket.Chat smoke test"}'
 ```
+
+If `INTERNAL_API_KEY` is not set, the endpoint remains open for local development and the
+service logs a startup warning.
 
 Publish a local NATS test event:
 
@@ -216,6 +221,7 @@ yarn smoke:http
 ```bash
 curl -X POST http://localhost:4000/notifications/send \
   -H "Content-Type: application/json" \
+  -H "x-internal-api-key: <internal-api-key>" \
   -d '{"channel":"#notifications","text":"Local HTTP smoke test"}'
 ```
 
@@ -274,6 +280,12 @@ If Rocket.Chat is unavailable, the endpoint returns `503`.
 Prometheus-style text exposition format.
 
 ### `POST /notifications/send`
+
+If `INTERNAL_API_KEY` is configured, include:
+
+```text
+x-internal-api-key: <internal-api-key>
+```
 
 ```json
 {
