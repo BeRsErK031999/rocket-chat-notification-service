@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "publish:test-event": "tsx scripts/publish-test-event.ts",
+    "dlq:last": "tsx scripts/read-dlq.ts",
     "format": "prettier --write ."
   },
   "dependencies": {

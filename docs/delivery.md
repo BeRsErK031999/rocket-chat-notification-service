@@ -1,7 +1,7 @@
 # Notification Delivery
 
-Rocket.Chat delivery uses a controlled in-process retry policy. It does not use persistence,
-DLQ, JetStream, Redis, or a database.
+Rocket.Chat delivery uses a controlled in-process retry policy. It does not use Redis or a
+database.
 
 ## Retry Settings
 
@@ -33,3 +33,6 @@ Retry logs include:
 
 If all attempts fail, the consumer handler returns `delivery_failed`. If any retry succeeds, it
 returns `success`.
+
+With JetStream enabled, `delivery_failed` events are published to the DLQ subject and the
+original message is acknowledged. See [jetstream.md](jetstream.md).

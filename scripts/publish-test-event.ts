@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import { buildSubject } from "../src/events/eventBus/subjectBuilder.js";
+import { buildSupportedSubjects } from "../src/events/eventBus/subjectBuilder.js";
 import { NatsClient } from "../src/events/eventBus/natsClient.js";
 import { env } from "../src/config/env.js";
 
@@ -25,7 +26,11 @@ const publish = async (): Promise<void> => {
   const subject = buildSubject(env.NATS_PREFIX, event.event);
 
   try {
-    await client.publish(subject, event);
+    await client.ensureStream(env.NATS_STREAM_NAME, [
+      ...buildSupportedSubjects(env.NATS_PREFIX),
+      env.NATS_DLQ_SUBJECT
+    ]);
+    await client.publishJetStream(subject, event);
     console.info(
       JSON.stringify({
         subject,

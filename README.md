@@ -11,6 +11,7 @@ transforms them into messages, and sends them through the Rocket.Chat REST API.
 - TypeScript
 - Fastify
 - NATS
+- NATS JetStream
 - Zod
 - dotenv
 - pino
@@ -90,6 +91,10 @@ Rocket.Chat delivery uses a bounded in-process retry policy. Defaults are 3 tota
 with a 500 ms delay between attempts. Retry is only applied to delivery failures after event
 validation and mapping have succeeded. See [docs/delivery.md](docs/delivery.md).
 
+NATS consumers use JetStream durable consumers with explicit ack. `delivery_failed` messages
+are published to `notifications.dlq` and then acknowledged to avoid infinite redelivery loops.
+See [docs/jetstream.md](docs/jetstream.md).
+
 ## Supported events
 
 - `project.deadline.overdue`
@@ -120,6 +125,9 @@ ROCKET_CHAT_USER_ID=<rocket-chat-user-id>
 ROCKET_CHAT_AUTH_TOKEN=<rocket-chat-auth-token>
 NATS_URL=nats://localhost:4222
 NATS_PREFIX=notifications
+NATS_STREAM_NAME=NOTIFICATIONS
+NATS_DURABLE_PREFIX=rocket-chat-notification-service
+NATS_DLQ_SUBJECT=notifications.dlq
 DELIVERY_RETRY_ATTEMPTS=3
 DELIVERY_RETRY_DELAY_MS=500
 ```
@@ -154,6 +162,7 @@ yarn type-check
 yarn lint
 yarn test
 yarn publish:test-event
+yarn dlq:last
 yarn format
 ```
 

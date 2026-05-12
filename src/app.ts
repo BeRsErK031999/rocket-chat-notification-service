@@ -5,6 +5,7 @@ import { startFinanceConsumer } from "./events/consumers/financeConsumer.js";
 import { startMonitoringConsumer } from "./events/consumers/monitoringConsumer.js";
 import { startProjectConsumer } from "./events/consumers/projectConsumer.js";
 import { NatsClient } from "./events/eventBus/natsClient.js";
+import { buildSupportedSubjects } from "./events/eventBus/subjectBuilder.js";
 import { RocketChatClient } from "./integrations/rocket-chat/rocketChatClient.js";
 import type { RocketChatClientPort } from "./integrations/rocket-chat/rocketChatTypes.js";
 import { NotificationDeliveryService } from "./modules/notifications/delivery/notificationDeliveryService.js";
@@ -44,26 +45,48 @@ export const buildApp = ({
 
   if (enableNatsConsumers) {
     app.addHook("onReady", async () => {
+      await natsClient.ensureStream(env.NATS_STREAM_NAME, [
+        ...buildSupportedSubjects(env.NATS_PREFIX),
+        env.NATS_DLQ_SUBJECT
+      ]);
       await startFinanceConsumer({
         natsClient,
         prefix: env.NATS_PREFIX,
+        streamName: env.NATS_STREAM_NAME,
+        durablePrefix: env.NATS_DURABLE_PREFIX,
+        dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         logger: app.log
       });
       await startProjectConsumer({
         natsClient,
         prefix: env.NATS_PREFIX,
+        streamName: env.NATS_STREAM_NAME,
+        durablePrefix: env.NATS_DURABLE_PREFIX,
+        dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         logger: app.log
       });
       await startMonitoringConsumer({
         natsClient,
         prefix: env.NATS_PREFIX,
+        streamName: env.NATS_STREAM_NAME,
+        durablePrefix: env.NATS_DURABLE_PREFIX,
+        dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         logger: app.log
       });
 
-      app.log.info({ natsUrl: env.NATS_URL, prefix: env.NATS_PREFIX }, "nats consumers started");
+      app.log.info(
+        {
+          natsUrl: env.NATS_URL,
+          prefix: env.NATS_PREFIX,
+          stream: env.NATS_STREAM_NAME,
+          durablePrefix: env.NATS_DURABLE_PREFIX,
+          dlqSubject: env.NATS_DLQ_SUBJECT
+        },
+        "nats jetstream consumers started"
+      );
     });
 
     app.addHook("onClose", async () => {
