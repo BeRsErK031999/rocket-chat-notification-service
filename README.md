@@ -106,6 +106,29 @@ curl http://localhost:4000/metrics
 Metrics cover HTTP requests, event processing results, Rocket.Chat delivery attempts/retries,
 DLQ publishes, and Rocket.Chat health checks. See [docs/observability.md](docs/observability.md).
 
+## Container deployment
+
+Build the service image:
+
+```bash
+docker build -t rocket-chat-notification-service:local .
+```
+
+Start Rocket.Chat and NATS:
+
+```bash
+docker compose -f docker-compose.rocketchat.yml up -d
+```
+
+Start the notification service container:
+
+```bash
+docker compose -f docker-compose.service.yml up --build
+```
+
+The service container exposes port `4000` and includes a `/health` healthcheck. See
+[docs/deployment.md](docs/deployment.md) for required env, `docker run`, and endpoint details.
+
 ## Supported events
 
 - `project.deadline.overdue`
