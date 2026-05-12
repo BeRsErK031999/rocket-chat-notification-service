@@ -14,6 +14,7 @@ import { NotificationDeliveryService } from "./modules/notifications/delivery/no
 import { createRetryPolicy } from "./modules/notifications/delivery/retryPolicy.js";
 import { createNotificationRoutes } from "./modules/notifications/notificationRoutes.js";
 import { NotificationService } from "./modules/notifications/notificationService.js";
+import { RuleBasedNotificationRouter } from "./modules/notifications/routing/notificationRouter.js";
 import { metrics } from "./observability/metrics.js";
 import { createMetricsRoutes } from "./observability/metricsRoutes.js";
 import { logger } from "./shared/logger.js";
@@ -46,6 +47,12 @@ export const buildApp = ({
     app.log
   );
   const natsClient = new NatsClient(env.NATS_URL);
+  const notificationRouter = new RuleBasedNotificationRouter({
+    defaultNotificationChannel: env.DEFAULT_NOTIFICATION_CHANNEL,
+    financeAlertsChannel: env.FINANCE_ALERTS_CHANNEL,
+    projectAlertsChannelPrefix: env.PROJECT_ALERTS_CHANNEL_PREFIX,
+    monitoringAlertsChannel: env.MONITORING_ALERTS_CHANNEL
+  });
 
   if (internalApiKey === undefined || internalApiKey.length === 0) {
     app.log.warn(
@@ -82,6 +89,7 @@ export const buildApp = ({
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         idempotencyStore,
+        notificationRouter,
         logger: app.log
       });
       await startProjectConsumer({
@@ -92,6 +100,7 @@ export const buildApp = ({
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         idempotencyStore,
+        notificationRouter,
         logger: app.log
       });
       await startMonitoringConsumer({
@@ -102,6 +111,7 @@ export const buildApp = ({
         dlqSubject: env.NATS_DLQ_SUBJECT,
         notificationDeliveryService,
         idempotencyStore,
+        notificationRouter,
         logger: app.log
       });
 

@@ -6,7 +6,8 @@ import type { NotificationEvent } from "../contracts/index.js";
 import type { IdempotencyStore } from "../idempotency/idempotencyStore.js";
 import type { NotificationDeliveryPort } from "../../modules/notifications/delivery/notificationDeliveryService.js";
 import { mapNotificationEvent } from "../../modules/notifications/mappers/notificationEventMapper.js";
-import type { SendNotificationInput } from "../../modules/notifications/notificationTypes.js";
+import type { MappedNotification } from "../../modules/notifications/notificationTypes.js";
+import type { NotificationRouter } from "../../modules/notifications/routing/routingTypes.js";
 import { metrics } from "../../observability/metrics.js";
 
 export type EventProcessingResult =
@@ -44,8 +45,9 @@ type HandleEventInput = {
   data: unknown;
   notificationDeliveryService: NotificationDeliveryPort;
   idempotencyStore: IdempotencyStore;
+  notificationRouter: NotificationRouter;
   logger: FastifyBaseLogger;
-  mapEvent?: (event: NotificationEvent) => SendNotificationInput;
+  mapEvent?: (event: NotificationEvent) => MappedNotification;
 };
 
 const readStringField = (data: unknown, field: string): string | undefined => {
@@ -70,6 +72,7 @@ export const handleIncomingEvent = async ({
   data,
   notificationDeliveryService,
   idempotencyStore,
+  notificationRouter,
   logger,
   mapEvent = mapNotificationEvent
 }: HandleEventInput): Promise<EventProcessingResult> => {
@@ -92,20 +95,37 @@ export const handleIncomingEvent = async ({
       return buildResult("duplicate_skipped", event.eventId, event.correlationId);
     }
 
-    let notification: SendNotificationInput;
+    let mappedNotification: MappedNotification;
 
     try {
-      notification = mapEvent(event);
+      mappedNotification = mapEvent(event);
     } catch (error) {
       logger.error({ err: error, ...logContext }, "nats event mapping failed");
       recordEventProcessed(event.event, "mapping_failed");
       return buildResult("mapping_failed", event.eventId, event.correlationId);
     }
 
+    const route = notificationRouter.resolve(event);
+    logger.info(
+      {
+        eventId: event.eventId,
+        event: event.event,
+        resolvedChannel: route.channel,
+        routingRule: route.routingRule
+      },
+      "notification route resolved"
+    );
+
     try {
-      await notificationDeliveryService.deliver(notification, {
-        ...buildDeliveryContext(event.eventId, event.correlationId)
-      });
+      await notificationDeliveryService.deliver(
+        {
+          ...mappedNotification,
+          channel: route.channel
+        },
+        {
+          ...buildDeliveryContext(event.eventId, event.correlationId)
+        }
+      );
     } catch (error) {
       logger.error({ err: error, ...logContext }, "nats event delivery failed");
       recordEventProcessed(event.event, "delivery_failed");

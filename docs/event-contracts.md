@@ -131,4 +131,5 @@ Subject: `notifications.monitoring.employee.afk`
 }
 ```
 
-`channel` is optional for all payloads. If omitted, the mapper uses a domain default channel.
+`channel` remains an optional payload field for compatibility, but NATS event delivery uses
+the notification routing layer to resolve Rocket.Chat channels. See [routing.md](routing.md).

@@ -23,7 +23,6 @@ describe("mapNotificationEvent", () => {
     };
 
     expect(mapNotificationEvent(event)).toEqual({
-      channel: "#finance-alerts",
       text: '[critical] Budget "Ops" exceeded: 120 USD / 100 USD.',
       metadata: {
         eventId: "event-1",
@@ -36,7 +35,7 @@ describe("mapNotificationEvent", () => {
     });
   });
 
-  it("maps project events to default project channel", () => {
+  it("maps project events without owning channel routing", () => {
     const event: NotificationEvent = {
       eventId: "event-2",
       event: "project.member.overallocated",
@@ -53,7 +52,7 @@ describe("mapNotificationEvent", () => {
 
     const notification = mapNotificationEvent(event);
 
-    expect(notification.channel).toBe("#projects");
+    expect("channel" in notification).toBe(false);
     expect(notification.metadata).toMatchObject({
       eventId: "event-2",
       correlationId: null,

@@ -100,6 +100,10 @@ NATS event delivery uses an in-memory idempotency guard keyed by `eventId`. Dupl
 are skipped with result `duplicate_skipped` while the event id is still within TTL. See
 [docs/idempotency.md](docs/idempotency.md).
 
+Notification routing is handled separately from message formatting. The mapper builds
+`text` and `metadata`; routing rules choose the Rocket.Chat channel. See
+[docs/routing.md](docs/routing.md).
+
 ## Observability
 
 The service exposes Prometheus-style text metrics:
@@ -173,6 +177,10 @@ NATS_DLQ_SUBJECT=notifications.dlq
 DELIVERY_RETRY_ATTEMPTS=3
 DELIVERY_RETRY_DELAY_MS=500
 IDEMPOTENCY_TTL_MS=86400000
+DEFAULT_NOTIFICATION_CHANNEL=general
+FINANCE_ALERTS_CHANNEL=finance-alerts
+PROJECT_ALERTS_CHANNEL_PREFIX=project-
+MONITORING_ALERTS_CHANNEL=monitoring-alerts
 ```
 
 Run the notification service locally:

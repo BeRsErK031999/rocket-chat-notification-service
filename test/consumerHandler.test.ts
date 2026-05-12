@@ -6,6 +6,7 @@ import type { NotificationEvent } from "../src/events/contracts/index.js";
 import { InMemoryIdempotencyStore } from "../src/events/idempotency/inMemoryIdempotencyStore.js";
 import type { IdempotencyStore } from "../src/events/idempotency/idempotencyStore.js";
 import type { NotificationDeliveryPort } from "../src/modules/notifications/delivery/notificationDeliveryService.js";
+import type { NotificationRouter } from "../src/modules/notifications/routing/routingTypes.js";
 import { metricsRegistry } from "../src/observability/metrics.js";
 
 const validFinanceEvent: NotificationEvent = {
@@ -30,6 +31,12 @@ describe("handleIncomingEvent", () => {
   });
 
   const createStore = (): IdempotencyStore => new InMemoryIdempotencyStore(86400000);
+  const createRouter = (): NotificationRouter => ({
+    resolve: () => ({
+      channel: "finance-alerts",
+      routingRule: "test-rule"
+    })
+  });
 
   it("returns validation_failed for invalid events", async () => {
     const deliver = vi.fn<NotificationDeliveryPort["deliver"]>().mockResolvedValue({ ok: true });
@@ -48,6 +55,7 @@ describe("handleIncomingEvent", () => {
       },
       notificationDeliveryService: deliveryService,
       idempotencyStore,
+      notificationRouter: createRouter(),
       logger: pino({ enabled: false })
     });
 
@@ -71,6 +79,7 @@ describe("handleIncomingEvent", () => {
       data: validFinanceEvent,
       notificationDeliveryService: deliveryService,
       idempotencyStore,
+      notificationRouter: createRouter(),
       logger: pino({ enabled: false })
     });
 
@@ -99,6 +108,7 @@ describe("handleIncomingEvent", () => {
       data: validFinanceEvent,
       notificationDeliveryService: deliveryService,
       idempotencyStore,
+      notificationRouter: createRouter(),
       logger: pino({ enabled: false })
     });
 
@@ -126,6 +136,7 @@ describe("handleIncomingEvent", () => {
       data: validFinanceEvent,
       notificationDeliveryService: deliveryService,
       idempotencyStore,
+      notificationRouter: createRouter(),
       logger: pino({ enabled: false })
     });
 
@@ -148,6 +159,7 @@ describe("handleIncomingEvent", () => {
       data: validFinanceEvent,
       notificationDeliveryService: deliveryService,
       idempotencyStore: createStore(),
+      notificationRouter: createRouter(),
       logger: pino({ enabled: false }),
       mapEvent: () => {
         throw new Error("mapping failed");

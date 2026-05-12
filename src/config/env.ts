@@ -16,7 +16,11 @@ const envSchema = z.object({
   NATS_DLQ_SUBJECT: z.string().min(1).default("notifications.dlq"),
   DELIVERY_RETRY_ATTEMPTS: z.coerce.number().int().positive().default(3),
   DELIVERY_RETRY_DELAY_MS: z.coerce.number().int().nonnegative().default(500),
-  IDEMPOTENCY_TTL_MS: z.coerce.number().int().positive().default(86400000)
+  IDEMPOTENCY_TTL_MS: z.coerce.number().int().positive().default(86400000),
+  DEFAULT_NOTIFICATION_CHANNEL: z.string().min(1).default("general"),
+  FINANCE_ALERTS_CHANNEL: z.string().min(1).default("finance-alerts"),
+  PROJECT_ALERTS_CHANNEL_PREFIX: z.string().min(1).default("project-"),
+  MONITORING_ALERTS_CHANNEL: z.string().min(1).default("monitoring-alerts")
 });
 
 export const env = envSchema.parse(process.env);
